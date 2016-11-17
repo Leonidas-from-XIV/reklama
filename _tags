@@ -1,1 +1,1 @@
-true: package(containers)
+true: package(containers), safe_string
