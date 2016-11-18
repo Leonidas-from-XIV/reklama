@@ -74,5 +74,8 @@ let main () =
   | Some ad_id -> Printf.printf "Found %d\n" ad_id
   | None -> print_endline "No matches found"
 
+let load_initial_db filename =
+  CCSexpM.parse_file filename
+
 let () =
   main ()

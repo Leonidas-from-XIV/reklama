@@ -1,1 +1,1 @@
-true: package(containers), safe_string
+true: package(containers), package(containers.sexp), safe_string
