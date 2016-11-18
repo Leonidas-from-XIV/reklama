@@ -21,10 +21,6 @@ type ad = {
 
 type database = ad list
 
-let found f xs = match List.find_pred f xs with
-  | Some _ -> true
-  | None -> false
-
 module CategorySet = Set.Make(String)
 
 let ad_categories ad =
