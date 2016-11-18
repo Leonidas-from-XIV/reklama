@@ -9,20 +9,40 @@ type channel = {
   categories: interest list
 }
 
-type channel_views = (channel * int CCLock.t)
+type channel_views = (channel * int)
 
 type ad = {
   id: int;
   starting: timestamp;
   ending: timestamp;
-  views: int CCLock.t;
-  channels: channel_views list
+  views: int;
+  channels: channel_views list;
 }
 
 type database = ad list
 
-let find_matching_ad db channel interests =
-  None
+let found f xs = match List.find_pred f xs with
+  | Some _ -> true
+  | None -> false
+
+let find_matching_ad db channel interests current_time =
+  let db = List.fold_left (fun acc interest ->
+    db |> List.filter (fun ad ->
+      ad.channels |> found @@ fun (ch, _) ->
+        ch.categories
+        |> found @@ fun channel_interest ->
+          channel_interest = interest)
+    |> (@) acc)
+    [] interests in
+  match db with
+  | [] -> None
+  | {id=id}::_ -> Some id
+
+let nyt = {name="nyt"; categories = ["travel"; "cooking"]}
+
+let initial_db = [
+  {id = 23; starting=0.0; ending=0.0; views=100; channels=[(nyt, 10)]}
+]
 
 let main () =
   print_string "Channel: ";
@@ -34,8 +54,9 @@ let main () =
     | interest -> loop @@ interest::interests
   in
   let interests = loop [] in
-  ignore @@ find_matching_ad [] ch interests;
-  ()
+  match find_matching_ad initial_db ch interests 0.0 with
+  | Some ad_id -> Printf.printf "Found %d\n" ad_id
+  | None -> print_endline "No matches found"
 
 let () =
   main ()
