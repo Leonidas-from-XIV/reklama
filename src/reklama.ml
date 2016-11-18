@@ -33,13 +33,27 @@ let ad_categories ad =
       CategorySet.add_list set ch.categories)
   CategorySet.empty
 
+let filter_for_interests interests db =
+  interests
+  |> List.fold_left (fun acc interest ->
+      db |> List.filter (fun ad ->
+        ad
+        |> ad_categories
+        |> CategorySet.mem interest)
+      |> (@) acc)
+      []
+
+let filter_for_time current_time db =
+  db
+  |> List.filter @@ fun e ->
+    e.starting <= current_time && current_time <= e.ending
+
 let find_matching_ad db channel interests current_time =
-  let db = List.fold_left (fun acc interest ->
-    db |> List.filter (fun ad ->
-      ad_categories ad
-      |> CategorySet.mem interest)
-    |> (@) acc)
-    [] interests in
+  let db =
+    db
+    |> filter_for_interests interests
+    |> filter_for_time current_time
+  in
   match db with
   | [] -> None
   | {id=id}::_ -> Some id
