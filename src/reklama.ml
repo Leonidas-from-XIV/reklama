@@ -21,5 +21,21 @@ type ad = {
 
 type database = ad list
 
+let find_matching_ad db channel interests =
+  None
+
+let main () =
+  print_string "Channel: ";
+  let ch = read_line () in
+  let rec loop interests =
+    print_string "Interest: ";
+    match read_line () with
+    | "" -> interests
+    | interest -> loop @@ interest::interests
+  in
+  let interests = loop [] in
+  ignore @@ find_matching_ad [] ch interests;
+  ()
+
 let () =
-  print_endline "Hello World"
+  main ()
