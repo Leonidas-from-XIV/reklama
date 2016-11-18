@@ -25,13 +25,19 @@ let found f xs = match List.find_pred f xs with
   | Some _ -> true
   | None -> false
 
+module CategorySet = Set.Make(String)
+
+let ad_categories ad =
+  ad.channels
+  |> List.fold_left (fun set (ch, _) ->
+      CategorySet.add_list set ch.categories)
+  CategorySet.empty
+
 let find_matching_ad db channel interests current_time =
   let db = List.fold_left (fun acc interest ->
     db |> List.filter (fun ad ->
-      ad.channels |> found @@ fun (ch, _) ->
-        ch.categories
-        |> found @@ fun channel_interest ->
-          channel_interest = interest)
+      ad_categories ad
+      |> CategorySet.mem interest)
     |> (@) acc)
     [] interests in
   match db with
