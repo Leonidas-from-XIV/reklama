@@ -16,6 +16,7 @@ type ad = {
   starting: timestamp;
   ending: timestamp;
   views: int;
+  uri: string;
   channels: channel_views list;
 }
 
@@ -57,7 +58,7 @@ let find_matching_ad db channel interests current_time =
 let nyt = {name="nyt"; categories = ["travel"; "cooking"]}
 
 let initial_db = [
-  {id = 23; starting=0.0; ending=0.0; views=100; channels=[(nyt, 10)]}
+  {id = 23; starting=0.0; ending=0.0; views=100; uri=""; channels=[(nyt, 10)]}
 ]
 
 let main () =
@@ -74,8 +75,23 @@ let main () =
   | Some ad_id -> Printf.printf "Found %d\n" ad_id
   | None -> print_endline "No matches found"
 
+let ad_of_sexp e =
+  CCSexp.Traverse.(
+    field "id" to_int e >>= fun id ->
+    field "starting" to_float e >>= fun starting ->
+    field "ending" to_float e >>= fun ending ->
+    field "views" to_int e >>= fun views ->
+    field "uri" to_string e >>= fun uri ->
+      let channels = [] in
+      return {id; starting; ending; views; uri; channels})
+
 let load_initial_db filename =
-  CCSexpM.parse_file filename
+  match CCSexpM.parse_file filename with
+  | `Error _ -> None
+  | `Ok sexp -> match sexp with
+    | `List ads -> Some 1
+    | `Atom _ -> None
 
 let () =
+  ignore @@ load_initial_db "ads.sexp";
   main ()
