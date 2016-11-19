@@ -84,20 +84,29 @@ let load_initial_db filename =
   | `Error _ -> failwith "SExp parsing failure"
   | `Ok sexp -> CCSexp.Traverse.list_all ad_of_sexp sexp
 
-let main () =
-  let initial_db = load_initial_db "ads.sexp" in
+let do_single_request db =
   print_string "Channel: ";
-  let ch = read_line () in
-  let rec loop interests =
+  match read_line () with
+  | "" -> false
+  | ch -> let rec loop interests =
     print_string "Interest: ";
     match read_line () with
-    | "" -> interests
-    | interest -> loop @@ interest::interests
-  in
-  let interests = loop [] in
-  match find_matching_ad initial_db ch interests 0.0 with
-  | Some ad_id -> Printf.printf "Found %d\n" ad_id
-  | None -> print_endline "No matches found"
+      | "" -> interests
+      | interest -> loop @@ interest::interests
+    in
+    let interests = loop [] in
+    begin match find_matching_ad db ch interests 0.0 with
+    | Some ad_id -> Printf.printf "Found %d\n" ad_id
+    | None -> print_endline "No matches found"
+    end;
+    true
+
+let main () =
+  let db = load_initial_db "ads.sexp" in
+  let rec loop = function
+    | true -> loop @@ do_single_request db
+    | false -> () in
+  loop true
 
 let () =
   main ()
