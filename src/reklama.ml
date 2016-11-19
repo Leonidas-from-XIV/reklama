@@ -55,13 +55,37 @@ let find_matching_ad db channel interests current_time =
   | [] -> None
   | {id=id}::_ -> Some id
 
-let nyt = {name="nyt"; categories = ["travel"; "cooking"]}
+let channel_of_sexp e =
+  CCSexp.Traverse.(
+    field "name" to_string e >>= fun name ->
+    field "categories" to_list e >>= fun cats ->
+      map_opt to_string cats >>= fun categories ->
+      return {name; categories})
 
-let initial_db = [
-  {id = 23; starting=0.0; ending=0.0; views=100; uri=""; channels=[(nyt, 10)]}
-]
+let channel_view_of_sexp e =
+  CCSexp.Traverse.(to_pair e >>= fun (ch, v) ->
+    to_int v >>= fun v ->
+    channel_of_sexp ch >>= fun ch ->
+      return (ch, v))
+
+let ad_of_sexp e =
+  CCSexp.Traverse.(
+    field "id" to_int e >>= fun id ->
+    field "starting" to_float e >>= fun starting ->
+    field "ending" to_float e >>= fun ending ->
+    field "views" to_int e >>= fun views ->
+    field "uri" to_string e >>= fun uri ->
+    field "channels" to_list e >>= fun channel_views ->
+      map_opt channel_view_of_sexp channel_views >>= fun channels ->
+      return {id; starting; ending; views; uri; channels})
+
+let load_initial_db filename =
+  match CCSexpM.parse_file filename with
+  | `Error _ -> failwith "SExp parsing failure"
+  | `Ok sexp -> CCSexp.Traverse.list_all ad_of_sexp sexp
 
 let main () =
+  let initial_db = load_initial_db "ads.sexp" in
   print_string "Channel: ";
   let ch = read_line () in
   let rec loop interests =
@@ -75,23 +99,5 @@ let main () =
   | Some ad_id -> Printf.printf "Found %d\n" ad_id
   | None -> print_endline "No matches found"
 
-let ad_of_sexp e =
-  CCSexp.Traverse.(
-    field "id" to_int e >>= fun id ->
-    field "starting" to_float e >>= fun starting ->
-    field "ending" to_float e >>= fun ending ->
-    field "views" to_int e >>= fun views ->
-    field "uri" to_string e >>= fun uri ->
-      let channels = [] in
-      return {id; starting; ending; views; uri; channels})
-
-let load_initial_db filename =
-  match CCSexpM.parse_file filename with
-  | `Error _ -> None
-  | `Ok sexp -> match sexp with
-    | `List ads -> Some 1
-    | `Atom _ -> None
-
 let () =
-  ignore @@ load_initial_db "ads.sexp";
   main ()
