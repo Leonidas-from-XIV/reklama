@@ -50,6 +50,30 @@ let filter_for_views db =
   |> List.filter @@ fun ad ->
     ad.views > 0
 
+(* Variant of List.map which stops mapping after the first change *)
+let rec map_first f = function
+  | [] -> []
+  | x::xs -> let x' = f x in
+    match x = x' with
+    | true -> x::map_first f xs
+    | false -> x'::xs
+
+let count_channel_view channel channel_views =
+  channel_views
+  |> map_first @@ fun (chan, views) ->
+    match chan.name = channel with
+    | false -> (chan, views)
+    | true -> (chan, views - 1)
+
+let count_view channel id db =
+  db
+  |> map_first @@ fun ad ->
+    match ad.id = id with
+    | false -> ad
+    | true -> {ad with
+      views = ad.views - 1;
+      channels = ad.channels |> count_channel_view channel}
+
 let find_matching_ad db channel interests current_time =
   let db =
     db
