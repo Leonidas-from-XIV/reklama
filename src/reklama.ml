@@ -42,14 +42,20 @@ let filter_for_interests interests db =
 
 let filter_for_time current_time db =
   db
-  |> List.filter @@ fun e ->
-    e.starting <= current_time && current_time <= e.ending
+  |> List.filter @@ fun ad ->
+    ad.starting <= current_time && current_time <= ad.ending
+
+let filter_for_views db =
+  db
+  |> List.filter @@ fun ad ->
+    ad.views > 0
 
 let find_matching_ad db channel interests current_time =
   let db =
     db
     |> filter_for_interests interests
     |> filter_for_time current_time
+    |> filter_for_views
   in
   match db with
   | [] -> None
