@@ -42,6 +42,8 @@ type database = ad list
 
 module CategorySet = Set.Make(String)
 
+module DataBase = Map.Make(Int)
+
 let ad_categories ad =
   ad.channels
   |> List.fold_left (fun set (ch, _) ->
@@ -95,6 +97,8 @@ let count_view channel id db =
 let find_matching_ad db channel interests current_time =
   let db =
     db
+    |> DataBase.values
+    |> List.of_seq
     |> filter_for_interests interests
     |> filter_for_time current_time
     |> filter_for_views
@@ -130,7 +134,11 @@ let ad_of_sexp e =
 let load_initial_db filename =
   match CCSexpM.parse_file filename with
   | `Error _ -> failwith "SExp parsing failure"
-  | `Ok sexp -> CCSexp.Traverse.list_all ad_of_sexp sexp
+  | `Ok sexp -> sexp
+    |> CCSexp.Traverse.list_all ad_of_sexp
+    |> List.map (fun ad -> (ad.id, ad))
+    |> List.to_seq
+    |> DataBase.of_seq
 
 let do_single_request db =
   print_string "Channel: ";
