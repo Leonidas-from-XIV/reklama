@@ -87,7 +87,7 @@ let load_initial_db filename =
 let do_single_request db =
   print_string "Channel: ";
   match read_line () with
-  | "" -> false
+  | "" -> None
   | ch -> let rec loop interests =
     print_string "Interest: ";
     match read_line () with
@@ -99,14 +99,14 @@ let do_single_request db =
     | Some ad_id -> Printf.printf "Found %d\n" ad_id
     | None -> print_endline "No matches found"
     end;
-    true
+    Some db
 
 let main () =
   let db = load_initial_db "ads.sexp" in
   let rec loop = function
-    | true -> loop @@ do_single_request db
-    | false -> () in
-  loop true
+    | Some db -> loop @@ do_single_request db
+    | None -> () in
+  loop @@ Some db
 
 let () =
   main ()
