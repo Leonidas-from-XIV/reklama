@@ -9,7 +9,15 @@ type channel = {
   categories: interest list
 }
 
+let print_channel out v =
+  Format.fprintf out
+    "{name = \"%s\"; categories = %a}"
+    v.name
+    Format.(list ~start:"[" ~stop:"]" string) v.categories;;
+
 type channel_views = (channel * int)
+
+let print_channel_views = Format.(pair print_channel int)
 
 type ad = {
   id: int;
@@ -19,6 +27,16 @@ type ad = {
   uri: string;
   channels: channel_views list;
 }
+
+let print_ad out v =
+  Format.fprintf out
+    "{id = %d; starting = %f; ending = %f; views = %d; uri = \"%s\"; channels = %a}"
+    v.id
+    v.starting
+    v.ending
+    v.views
+    v.uri
+    Format.(list print_channel_views) v.channels
 
 type database = ad list
 
@@ -83,7 +101,7 @@ let find_matching_ad db channel interests current_time =
   in
   match db with
   | [] -> None
-  | {id=id}::_ -> Some id
+  | ad::_ -> Some ad
 
 let channel_of_sexp e =
   CCSexp.Traverse.(
@@ -126,7 +144,7 @@ let do_single_request db =
     in
     let interests = loop [] in
     begin match find_matching_ad db ch interests 0.0 with
-    | Some ad_id -> Printf.printf "Found %d\n" ad_id
+    | Some ad_id -> Format.printf "Found %a\n" print_ad ad_id
     | None -> print_endline "No matches found"
     end;
     Some db
