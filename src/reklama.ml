@@ -41,23 +41,25 @@ let print_ad out v =
 
 type database = ad list
 
-module CategorySet = Set.Make(String)
+module Categories = Set.Make(String)
 
 module DataBase = Map.Make(Int)
 
-let ad_categories ad =
+let ad_categories channel ad =
   ad.channels
-  |> List.fold_left (fun set ((ch : channel), _) ->
-      CategorySet.add_list set ch.categories)
-    CategorySet.empty
+    |> List.find_pred (fun (ch, _) -> ch.name = channel)
+    |> (function
+      | None -> []
+      | Some (ch, _) -> [])
+  |> Categories.add_list @@ Categories.of_list ad.categories
 
-let filter_for_interests interests db =
+let filter_for_interests channel interests db =
   interests
   |> List.fold_left (fun acc interest ->
       db |> List.filter (fun ad ->
         ad
-        |> ad_categories
-        |> CategorySet.mem interest)
+        |> ad_categories channel
+        |> Categories.mem interest)
       |> (@) acc)
       []
 
@@ -100,7 +102,7 @@ let find_matching_ad db channel interests current_time =
     db
     |> DataBase.values
     |> List.of_seq
-    |> filter_for_interests interests
+    |> filter_for_interests channel interests
     |> filter_for_time current_time
     |> filter_for_views
   in
