@@ -7,4 +7,5 @@ let () =
   Pkg.describe
     ~change_logs:[]
     "reklama" @@ fun c ->
-  Ok [ Pkg.bin "src/reklama" ]
+  Ok [ Pkg.bin "src/cli";
+       Pkg.bin "src/web" ]

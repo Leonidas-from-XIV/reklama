@@ -10,7 +10,7 @@ You need a system with [OPAM](https://opam.ocaml.org/) and a recent-ish OCaml
 compiler, so something 4.02 or newer.
 
 ```bash
-opam install ocamlbuild topkg containers
+opam install ocamlbuild topkg containers lwt webmachine
 ocaml pkg/pkg.ml -build
 ```
 
