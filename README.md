@@ -11,16 +11,17 @@ compiler, so something 4.02 or newer.
 
 ```bash
 opam install ocamlbuild topkg containers lwt webmachine
-ocaml pkg/pkg.ml -build
+ocaml pkg/pkg.ml build
 ```
 
 Usage
 -----
 
-TODO. Currently there is a command line tool but that's not the end of the line
-yet.
-
 Specify your database in the `ads.sexp` file.
+
+There is a command line interface (`_build/src/cli.native`) to request items,
+as well as a REST based interface (`_build/src/web`) which will load the DB
+upon startup and allow requesting over port 8080.
 
 License
 -------

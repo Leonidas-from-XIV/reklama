@@ -110,6 +110,10 @@ let find_matching_ad db channel interests current_time =
   | [] -> None
   | ad::_ -> Some ad
 
+(* TODO this should handle decrementing *)
+let find_ad_by_id db id =
+  DataBase.get id db
+
 let channel_of_sexp e =
   CCSexp.Traverse.(
     field "name" to_string e >>= fun name ->
