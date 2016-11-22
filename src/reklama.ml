@@ -26,6 +26,7 @@ type ad = {
   views: int;
   uri: string;
   channels: channel_views list;
+  categories: interest list;
 }
 
 let print_ad out v =
@@ -46,9 +47,9 @@ module DataBase = Map.Make(Int)
 
 let ad_categories ad =
   ad.channels
-  |> List.fold_left (fun set (ch, _) ->
+  |> List.fold_left (fun set ((ch : channel), _) ->
       CategorySet.add_list set ch.categories)
-  CategorySet.empty
+    CategorySet.empty
 
 let filter_for_interests interests db =
   interests
@@ -127,9 +128,11 @@ let ad_of_sexp e =
     field "ending" to_float e >>= fun ending ->
     field "views" to_int e >>= fun views ->
     field "uri" to_string e >>= fun uri ->
+    field "categories" to_list e >>= fun categories ->
+    map_opt to_string categories >>= fun categories ->
     field "channels" to_list e >>= fun channel_views ->
-      map_opt channel_view_of_sexp channel_views >>= fun channels ->
-      return {id; starting; ending; views; uri; channels})
+    map_opt channel_view_of_sexp channel_views >>= fun channels ->
+      return {id; starting; ending; views; uri; channels; categories})
 
 let load_initial_db filename =
   match CCSexpM.parse_file filename with
