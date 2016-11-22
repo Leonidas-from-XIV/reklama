@@ -3,6 +3,7 @@
   (ending 0.0)
   (views 1000)
   (uri "http://nytimes.com")
+  (categories ("photo"))
   (channels ((((name "nyt")
                (categories ("travel" "cooking")))
               10)))))

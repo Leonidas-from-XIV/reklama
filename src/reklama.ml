@@ -50,7 +50,7 @@ let ad_categories channel ad =
     |> List.find_pred (fun (ch, _) -> ch.name = channel)
     |> (function
       | None -> []
-      | Some (ch, _) -> [])
+      | Some (ch, _) -> ch.categories)
   |> Categories.add_list @@ Categories.of_list ad.categories
 
 let filter_for_interests channel interests db =
