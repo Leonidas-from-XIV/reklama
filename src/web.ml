@@ -60,13 +60,14 @@ class match_ad db = object(self)
     let current_time = 0.0 in
     Db.match_ db channel interests current_time >>= (fun res ->
       (match res with
-      | Some ad -> print_endline "found"
+      | Some ad -> print_endline @@ "found " ^ ad.uri
       | None -> print_endline "not_found");
       Lwt.return ());
     (match channel with
     | Some c -> print_endline @@ "ch " ^ c
     | None -> ());
-    Wm.continue (`String "{}") rd
+    let rd' = Wm.Rd.redirect "http://xivilization.net" rd in
+    Wm.continue (`String "{}") rd'
 
   method content_types_provided rd =
     Wm.continue [
