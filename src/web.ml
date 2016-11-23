@@ -69,6 +69,9 @@ class match_ad db = object(self)
     let rd' = Wm.Rd.redirect "http://xivilization.net" rd in
     Wm.continue (`String "{}") rd'
 
+  method resource_exists rd =
+    Wm.continue true rd
+
   method content_types_provided rd =
     Wm.continue [
       "application/json", self#to_json
