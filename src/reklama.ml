@@ -46,11 +46,13 @@ module Categories = Set.Make(String)
 module DataBase = Map.Make(Int)
 
 let ad_categories channel ad =
-  ad.channels
-    |> List.find_pred (fun (ch, _) -> ch.name = channel)
+  (match channel with
+  | None -> []
+  | Some cname -> ad.channels
+    |> List.find_pred (fun (ch, _) -> ch.name = cname)
     |> (function
       | None -> []
-      | Some (ch, _) -> ch.categories)
+      | Some (ch, _) -> ch.categories))
   |> Categories.add_list @@ Categories.of_list ad.categories
 
 let filter_for_interests channel interests db =

@@ -16,6 +16,12 @@ module Db = struct
       match Reklama.find_ad_by_id ads id with
       | Some ad -> (Some ad, ads)
       | None -> (None, ads)
+
+  let match_ db channel interests current_time =
+    with_db db @@ fun ads ->
+      match Reklama.find_matching_ad ads channel interests current_time with
+      | Some ad -> (Some ad, ads)
+      | None -> (None, ads)
 end
 
 module Wm = struct
@@ -46,13 +52,20 @@ end
 class match_ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
 
-  method private of_json rd =
-      Wm.continue true rd
-
-  method allowed_methods rd =
-    Wm.continue [`POST] rd
-
   method private to_json rd =
+    let channel = Uri.get_query_param rd.Wm.Rd.uri "channel" in
+    let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
+      | Some ints -> ints
+      | None -> [] in
+    let current_time = 0.0 in
+    Db.match_ db channel interests current_time >>= (fun res ->
+      (match res with
+      | Some ad -> print_endline "found"
+      | None -> print_endline "not_found");
+      Lwt.return ());
+    (match channel with
+    | Some c -> print_endline @@ "ch " ^ c
+    | None -> ());
     Wm.continue (`String "{}") rd
 
   method content_types_provided rd =
@@ -61,14 +74,7 @@ class match_ad db = object(self)
     ] rd
 
   method content_types_accepted rd =
-    Wm.continue [
-      "application/json", self#of_json
-    ] rd
-
-  method process_post rd =
-    Cohttp_lwt_body.to_string rd.Wm.Rd.req_body >>= fun body ->
-      print_endline @@ "Body is " ^ body;
-      Wm.continue true rd
+    Wm.continue [] rd
 end
 
 let main () =
