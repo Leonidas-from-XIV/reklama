@@ -3,3 +3,5 @@ B _build/
 PKG containers
 PKG containers.sexp
 PKG webmachine
+PKG lwt
+PKG cohttp.lwt
