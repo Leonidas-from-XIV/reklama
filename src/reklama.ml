@@ -167,6 +167,18 @@ let find_matching_ad db channel interests current_time =
   | [] -> None
   | ad::_ -> Some ad
 
+let find_ad_by_id db current_time id =
+  let open CCOpt.Infix in
+  let potential = (match Ad.DataBase.get id db with
+    | Some ad -> [ad]
+    | None -> [])
+    |> filter_for_time current_time
+    |> filter_for_views
+  in
+  match potential with
+  | [] -> None
+  | ad::_ -> Some ad
+
 let load_initial_db filename =
   match CCSexpM.parse_file filename with
   | `Error _ -> failwith "SExp parsing failure"
