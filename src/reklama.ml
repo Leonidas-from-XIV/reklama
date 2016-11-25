@@ -51,6 +51,7 @@ module Ad : sig
   module DataBase : Map.S
   val of_sexp : CCSexp.t -> t option
   val db_of_ad_list : t list -> t DataBase.t
+  val view : string option -> t -> t DataBase.t -> string option * t DataBase.t
 end = struct
   type t = {
     id: int;
@@ -61,6 +62,7 @@ end = struct
     channels: channel_views list;
     categories: interest list;
   }
+  module DataBase = Map.Make(Int)
 
   let print out v =
     Format.fprintf out
@@ -102,28 +104,36 @@ end = struct
         return {id; starting; ending; views; uri; channels; categories})
 
   let count_channel_view channel channel_views =
-    channel_views
-    |> map_first @@ fun (chan, views) ->
-      match chan.name = channel with
-      | false -> (chan, views)
-      | true -> (chan, views - 1)
+    match channel with
+    | None -> channel_views
+    | Some channel -> channel_views
+      |> map_first @@ fun (chan, views) ->
+        match chan.name = channel with
+        | false -> (chan, views)
+        | true -> (chan, views - 1)
 
-  let count_view channel id db =
+  let count_view channel ad db =
     db
-    |> map_first @@ fun ad ->
-      match ad.id = id with
-      | false -> ad
-      | true -> {ad with
-        views = ad.views - 1;
-        channels = ad.channels |> count_channel_view channel}
-
-  module DataBase = Map.Make(Int)
+    |> DataBase.update ad.id (function
+      | None -> None
+      | Some ad -> Some {ad with
+          views = ad.views - 1;
+          channels = ad.channels |> count_channel_view channel})
 
   let db_of_ad_list ads =
     ads
     |> List.map (fun ad -> (ad.id, ad))
     |> List.to_seq
     |> DataBase.of_seq
+
+  let view channel ad db =
+    let open CCOpt.Infix in
+    let uri = DataBase.get ad.id db >>= fun ad ->
+      if ad.views > 0 then Some ad.uri else None
+    in
+    match uri with
+    | Some uri -> (Some uri, count_view channel ad db)
+    | None -> (None, db)
 end
 
 let filter_for_interests channel interests db =
@@ -156,10 +166,6 @@ let find_matching_ad db channel interests current_time =
   match db with
   | [] -> None
   | ad::_ -> Some ad
-
-(* TODO this should handle decrementing *)
-let find_ad_by_id db id =
-  Ad.DataBase.get id db
 
 let load_initial_db filename =
   match CCSexpM.parse_file filename with

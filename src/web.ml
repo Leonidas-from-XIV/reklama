@@ -11,17 +11,21 @@ module Db = struct
       Lwt_mvar.put db ads' >|= fun () ->
         result
 
-  let get db id =
-    with_db db @@ fun ads ->
-      match Reklama.find_ad_by_id ads id with
-      | Some ad -> (Some ad, ads)
-      | None -> (None, ads)
+  (* let get db id = *)
+  (*   with_db db @@ fun ads -> *)
+  (*     match Reklama.find_ad_by_id ads id with *)
+  (*     | Some ad -> (Some ad, ads) *)
+  (*     | None -> (None, ads) *)
 
   let match_ db channel interests current_time =
     with_db db @@ fun ads ->
       match Reklama.find_matching_ad ads channel interests current_time with
       | Some ad -> (Some ad, ads)
       | None -> (None, ads)
+
+  let view db channel ad =
+    with_db db @@ fun ads ->
+      Reklama.Ad.view channel ad ads
 end
 
 module Wm = struct
