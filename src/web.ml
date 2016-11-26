@@ -62,11 +62,12 @@ class match_ad db = object(self)
       | Some ints -> ints
       | None -> [] in
     let current_time = 0.0 in
-    Db.match_ db channel interests current_time >>= fun res ->
-      let rd' = match res with
-      | None -> rd
-      | Some ad -> Wm.Rd.redirect "http://xivilization.net" rd in
-      Wm.continue (`String "{}") rd'
+    Db.match_ db channel interests current_time >>= function
+      | None -> Wm.continue (`String "{}") rd
+      | Some ad ->
+          Db.view db channel ad >>= function
+            | None -> Wm.continue (`String "{}") rd
+            | Some uri -> Wm.continue (`String "{}") @@ Wm.Rd.redirect uri rd
 
   method resource_exists rd =
     Wm.continue true rd
