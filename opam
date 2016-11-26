@@ -1,8 +1,19 @@
+opam-version: "1.2"
+maintainer: "Marek Kubica <marek@xivilization.net>"
+author: "Marek Kubica <marek@xivilization.net>"
+homepage: "https://github.com/Leonidas-from-XIV/reklama"
+bug-reports: "https://github.com/Leonidas-from-XIV/reklama/issues"
+dev-repo: "https://github.com/Leonidas-from-XIV/reklama.git"
 depends: [
   "ocamlfind" {build}
   "ocamlbuild" {build}
   "topkg" {build}
-  "containers" ]
+  "containers"
+  "ptime"
+  "uri"
+  "lwt"
+  "cohttp"
+  "webmachine" ]
 build: [
   "ocaml" "pkg/pkg.ml" "build"
           "--pinned" "%{pinned}%" ]
