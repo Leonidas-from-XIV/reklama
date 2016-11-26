@@ -43,9 +43,6 @@ end
 class ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
 
-  method private of_json rd =
-    Wm.continue true rd
-
   method private to_json rd =
     let current_time = Ptime.min in
     Db.retrieve db current_time (self#id rd) >>= function
@@ -58,9 +55,7 @@ class ad db = object(self)
     ] rd
 
   method content_types_accepted rd =
-    Wm.continue [
-      "application/json", self#of_json
-    ] rd
+    Wm.continue [] rd
 
   method private id rd =
     int_of_string (Wm.Rd.lookup_path_info_exn "id" rd)
