@@ -44,7 +44,7 @@ class ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
 
   method private to_json rd =
-    let current_time = Ptime.min in
+    let current_time = Ptime_clock.now () in
     Db.retrieve db current_time (self#id rd) >>= function
       | None -> Wm.continue (`String "{}") rd
       | Some ad ->
@@ -58,7 +58,7 @@ class ad db = object(self)
     ] rd
 
   method resource_exists rd =
-    let current_time = Ptime.min in
+    let current_time = Ptime_clock.now () in
     Db.retrieve db current_time (self#id rd) >>= function
       | None -> Wm.continue false rd
       | Some _ -> Wm.continue true rd
@@ -78,7 +78,7 @@ class match_ad db = object(self)
     let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
       | Some ints -> ints
       | None -> [] in
-    let current_time = Ptime.min in
+    let current_time = Ptime_clock.now () in
     Db.match_ db channel interests current_time >>= function
       | None -> Wm.continue (`String "{}") rd
       | Some ad ->
@@ -91,7 +91,7 @@ class match_ad db = object(self)
     let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
       | Some ints -> ints
       | None -> [] in
-    let current_time = Ptime.min in
+    let current_time = Ptime_clock.now () in
     Db.match_ db channel interests current_time >>= function
       | Some _ -> Wm.continue true rd
       | None -> Wm.continue false rd
