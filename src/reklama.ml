@@ -101,13 +101,9 @@ end = struct
       map_opt to_string categories >>= fun categories ->
       field "channels" to_list e >>= fun channel_views ->
       map_opt channel_view_of_sexp channel_views >>= fun channels ->
-        match Ptime.of_rfc3339 starting with
-        | Error _ -> None
-        | Ok (starting, _, _) ->
-           match Ptime.of_rfc3339 ending with
-           | Error _ -> None
-           | Ok (ending, _, _) ->
-             return {id; starting; ending; views; uri; channels; categories})
+        Ptime.of_rfc3339 starting |> Result.to_opt >>= fun (starting, _, _) ->
+        Ptime.of_rfc3339 ending |> Result.to_opt >>= fun (ending, _, _) ->
+          return {id; starting; ending; views; uri; channels; categories})
 
   let count_channel_view channel channel_views =
     match channel with
