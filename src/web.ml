@@ -47,12 +47,21 @@ class ad db = object(self)
     let current_time = Ptime.min in
     Db.retrieve db current_time (self#id rd) >>= function
       | None -> Wm.continue (`String "{}") rd
-      | Some ad -> Wm.continue (`String "{}") rd
+      | Some ad ->
+          Db.view db None ad >>= function
+            | None -> Wm.continue (`String "{}") rd
+            | Some uri -> Wm.continue (`String "{}") @@ Wm.Rd.redirect uri rd
 
   method content_types_provided rd =
     Wm.continue [
       "application/json", self#to_json
     ] rd
+
+  method resource_exists rd =
+    let current_time = Ptime.min in
+    Db.retrieve db current_time (self#id rd) >>= function
+      | None -> Wm.continue false rd
+      | Some _ -> Wm.continue true rd
 
   method content_types_accepted rd =
     Wm.continue [] rd
