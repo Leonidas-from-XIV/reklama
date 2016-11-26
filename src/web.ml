@@ -1,3 +1,4 @@
+open Containers
 open Cohttp_lwt_unix
 open Lwt.Infix
 
@@ -23,6 +24,12 @@ module Db = struct
       | Some ad -> (Some ad, ads)
       | None -> (None, ads)
 
+  let retrieve db current_time id =
+    with_db db @@ fun ads ->
+      match Reklama.find_ad_by_id ads current_time id with
+      | Some ad -> (Some ad, ads)
+      | None -> (None, ads)
+
   let view db channel ad =
     with_db db @@ fun ads ->
       Reklama.Ad.view channel ad ads
@@ -40,7 +47,10 @@ class ad db = object(self)
     Wm.continue true rd
 
   method private to_json rd =
-    Wm.continue (`String "{}") rd
+    let current_time = Ptime.min in
+    Db.retrieve db current_time (self#id rd) >>= function
+      | None -> Wm.continue (`String "{}") rd
+      | Some ad -> Wm.continue (`String "{}") rd
 
   method content_types_provided rd =
     Wm.continue [
@@ -51,6 +61,9 @@ class ad db = object(self)
     Wm.continue [
       "application/json", self#of_json
     ] rd
+
+  method private id rd =
+    int_of_string (Wm.Rd.lookup_path_info_exn "id" rd)
 end
 
 class match_ad db = object(self)

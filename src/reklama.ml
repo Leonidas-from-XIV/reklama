@@ -48,7 +48,7 @@ module Ad : sig
   val categories : string option -> t -> Categories.t
   val within_time : timestamp -> t -> bool
   val views_left : t -> bool
-  module DataBase : Map.S
+  module DataBase : Map.S with type key = int
   val of_sexp : CCSexp.t -> t option
   val db_of_ad_list : t list -> t DataBase.t
   val view : string option -> t -> t DataBase.t -> string option * t DataBase.t
@@ -170,7 +170,6 @@ let find_matching_ad db channel interests current_time =
   | ad::_ -> Some ad
 
 let find_ad_by_id db current_time id =
-  let open CCOpt.Infix in
   let potential = (match Ad.DataBase.get id db with
     | Some ad -> [ad]
     | None -> [])
