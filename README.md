@@ -1,6 +1,8 @@
 # Reklama #
 
-Reklama is a proof of concept for serving ads
+[![Build Status](https://travis-ci.com/Leonidas-from-XIV/reklama.svg?token=ikxzhRzSB2xgcAYcBv1R&branch=master)](https://travis-ci.com/Leonidas-from-XIV/reklama)
+
+Reklama is a proof of concept for serving ads.
 
 ## Building ##
 
@@ -29,14 +31,14 @@ command line flags or anything.
 
 ### REST interface ###
 
-The REST interface offers two endpoints, you can call them using curl[curl] or
-its cousin httpie[httpie].
+The REST interface offers two endpoints, you can call them using [curl][] or
+its cousin [httpie][].
 
 ```sh
 http :8080/ad/23
 ```
 
-#### `/ad/:id` ####
+#### `GET /ad/:id` ####
 
 For looking up an ad directly by a known (integer) ID.
 
@@ -47,7 +49,7 @@ Return codes:
   * HTTP 410: Gone, when the ad was found but is over capacity or time
   * HTTP 404: Not found, when there is no such ad.
 
-#### `/ad` #####
+#### `GET /ad` #####
 
 For looking up an ad by an originating channel and interests.
 
