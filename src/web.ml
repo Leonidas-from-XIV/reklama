@@ -70,7 +70,14 @@ class match_ad db = object(self)
             | Some uri -> Wm.continue (`String "{}") @@ Wm.Rd.redirect uri rd
 
   method resource_exists rd =
-    Wm.continue true rd
+    let channel = Uri.get_query_param rd.Wm.Rd.uri "channel" in
+    let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
+      | Some ints -> ints
+      | None -> [] in
+    let current_time = 0.0 in
+    Db.match_ db channel interests current_time >>= function
+      | Some _ -> Wm.continue true rd
+      | None -> Wm.continue false rd
 
   method content_types_provided rd =
     Wm.continue [
