@@ -61,7 +61,7 @@ class match_ad db = object(self)
     let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
       | Some ints -> ints
       | None -> [] in
-    let current_time = 0.0 in
+    let current_time = Ptime.min in
     Db.match_ db channel interests current_time >>= function
       | None -> Wm.continue (`String "{}") rd
       | Some ad ->
@@ -74,7 +74,7 @@ class match_ad db = object(self)
     let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
       | Some ints -> ints
       | None -> [] in
-    let current_time = 0.0 in
+    let current_time = Ptime.min in
     Db.match_ db channel interests current_time >>= function
       | Some _ -> Wm.continue true rd
       | None -> Wm.continue false rd

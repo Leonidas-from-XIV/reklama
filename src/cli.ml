@@ -9,7 +9,8 @@ let do_single_request db =
       | interest -> loop @@ interest::interests
     in
     let interests = loop [] in
-    begin match Reklama.find_matching_ad db (Some ch) interests 0.0 with
+    let current_time = Ptime.min in
+    begin match Reklama.find_matching_ad db (Some ch) interests current_time with
     | Some ad_id -> Format.printf "Found %a\n" Reklama.Ad.print ad_id
     | None -> print_endline "No matches found"
     end;

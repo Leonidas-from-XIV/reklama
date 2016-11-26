@@ -1,6 +1,6 @@
 open Containers
 
-type timestamp = float
+type timestamp = Ptime.t
 
 type interest = string
 
@@ -66,10 +66,10 @@ end = struct
 
   let print out v =
     Format.fprintf out
-      "{id = %d; starting = %f; ending = %f; views = %d; uri = \"%s\"; channels = %a}"
+      "{id = %d; starting = %a; ending = %a; views = %d; uri = \"%s\"; channels = %a}"
       v.id
-      v.starting
-      v.ending
+      (Ptime.pp_human ()) v.starting
+      (Ptime.pp_human ()) v.ending
       v.views
       v.uri
       Format.(list print_channel_views) v.channels
@@ -101,6 +101,8 @@ end = struct
       map_opt to_string categories >>= fun categories ->
       field "channels" to_list e >>= fun channel_views ->
       map_opt channel_view_of_sexp channel_views >>= fun channels ->
+        Ptime.of_float_s starting >>= fun starting ->
+        Ptime.of_float_s ending >>= fun ending ->
         return {id; starting; ending; views; uri; channels; categories})
 
   let count_channel_view channel channel_views =
