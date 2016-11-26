@@ -51,14 +51,14 @@ module Ad : sig
   module DataBase : Map.S with type key = int
   val of_sexp : CCSexp.t -> t option
   val db_of_ad_list : t list -> t DataBase.t
-  val view : string option -> t -> t DataBase.t -> string option * t DataBase.t
+  val view : string option -> t -> t DataBase.t -> Uri.t option * t DataBase.t
 end = struct
   type t = {
     id: int;
     starting: timestamp;
     ending: timestamp;
     views: int;
-    uri: string;
+    uri: Uri.t;
     channels: channel_views list;
     categories: interest list;
   }
@@ -66,12 +66,12 @@ end = struct
 
   let print out v =
     Format.fprintf out
-      "{id = %d; starting = %a; ending = %a; views = %d; uri = \"%s\"; channels = %a}"
+      "{id = %d; starting = %a; ending = %a; views = %d; uri = \"%a\"; channels = %a}"
       v.id
       (Ptime.pp_human ()) v.starting
       (Ptime.pp_human ()) v.ending
       v.views
-      v.uri
+      Uri.pp_hum v.uri
       Format.(list print_channel_views) v.channels
 
   let categories channel ad =
@@ -103,6 +103,7 @@ end = struct
       map_opt channel_view_of_sexp channel_views >>= fun channels ->
         Ptime.of_rfc3339 starting |> Result.to_opt >>= fun (starting, _, _) ->
         Ptime.of_rfc3339 ending |> Result.to_opt >>= fun (ending, _, _) ->
+          let uri = Uri.of_string uri in
           return {id; starting; ending; views; uri; channels; categories})
 
   let count_channel_view channel channel_views =

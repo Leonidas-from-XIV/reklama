@@ -44,13 +44,7 @@ class ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
 
   method private to_json rd =
-    let current_time = Ptime_clock.now () in
-    Db.retrieve db current_time (self#id rd) >>= function
-      | None -> Wm.continue (`String "{}") rd
-      | Some ad ->
-          Db.view db None ad >>= function
-            | None -> Wm.continue (`String "{}") rd
-            | Some uri -> Wm.continue (`String "{}") @@ Wm.Rd.redirect uri rd
+    Wm.continue `Empty rd
 
   method content_types_provided rd =
     Wm.continue [
@@ -58,13 +52,24 @@ class ad db = object(self)
     ] rd
 
   method resource_exists rd =
+    Wm.continue false rd
+
+  method content_types_accepted rd =
+    Wm.continue [] rd
+
+  method previously_existed rd =
     let current_time = Ptime_clock.now () in
     Db.retrieve db current_time (self#id rd) >>= function
       | None -> Wm.continue false rd
       | Some _ -> Wm.continue true rd
 
-  method content_types_accepted rd =
-    Wm.continue [] rd
+  method moved_temporarily rd =
+    let current_time = Ptime_clock.now () in
+    Db.retrieve db current_time (self#id rd) >>= function
+      | None -> Wm.continue None rd
+      | Some ad ->
+          Db.view db None ad >>= fun uri ->
+            Wm.continue uri rd
 
   method private id rd =
     int_of_string (Wm.Rd.lookup_path_info_exn "id" rd)
@@ -74,19 +79,12 @@ class match_ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
 
   method private to_json rd =
-    let channel = Uri.get_query_param rd.Wm.Rd.uri "channel" in
-    let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
-      | Some ints -> ints
-      | None -> [] in
-    let current_time = Ptime_clock.now () in
-    Db.match_ db channel interests current_time >>= function
-      | None -> Wm.continue (`String "{}") rd
-      | Some ad ->
-          Db.view db channel ad >>= function
-            | None -> Wm.continue (`String "{}") rd
-            | Some uri -> Wm.continue (`String "{}") @@ Wm.Rd.redirect uri rd
+    Wm.continue `Empty rd
 
   method resource_exists rd =
+    Wm.continue false rd
+
+  method previously_existed rd =
     let channel = Uri.get_query_param rd.Wm.Rd.uri "channel" in
     let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
       | Some ints -> ints
@@ -95,6 +93,18 @@ class match_ad db = object(self)
     Db.match_ db channel interests current_time >>= function
       | Some _ -> Wm.continue true rd
       | None -> Wm.continue false rd
+
+  method moved_temporarily rd =
+    let channel = Uri.get_query_param rd.Wm.Rd.uri "channel" in
+    let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
+      | Some ints -> ints
+      | None -> [] in
+    let current_time = Ptime_clock.now () in
+    Db.match_ db channel interests current_time >>= function
+      | None -> Wm.continue None rd
+      | Some ad ->
+          Db.view db channel ad >>= fun uri ->
+            Wm.continue uri rd
 
   method content_types_provided rd =
     Wm.continue [
