@@ -85,7 +85,7 @@ end = struct
     |> Categories.add_list @@ Categories.of_list ad.categories
 
   let within_time time ad =
-    ad.starting <= time && time <= ad.ending
+    Ptime.is_later time ~than:ad.starting && Ptime.is_earlier time ~than:ad.ending
 
   let views_left ad =
     ad.views > 0
@@ -93,17 +93,21 @@ end = struct
   let of_sexp e =
     CCSexp.Traverse.(
       field "id" to_int e >>= fun id ->
-      field "starting" to_float e >>= fun starting ->
-      field "ending" to_float e >>= fun ending ->
+      field "starting" to_string e >>= fun starting ->
+      field "ending" to_string e >>= fun ending ->
       field "views" to_int e >>= fun views ->
       field "uri" to_string e >>= fun uri ->
       field "categories" to_list e >>= fun categories ->
       map_opt to_string categories >>= fun categories ->
       field "channels" to_list e >>= fun channel_views ->
       map_opt channel_view_of_sexp channel_views >>= fun channels ->
-        Ptime.of_float_s starting >>= fun starting ->
-        Ptime.of_float_s ending >>= fun ending ->
-        return {id; starting; ending; views; uri; channels; categories})
+        match Ptime.of_rfc3339 starting with
+        | Error _ -> None
+        | Ok (starting, _, _) ->
+           match Ptime.of_rfc3339 ending with
+           | Error _ -> None
+           | Ok (ending, _, _) ->
+             return {id; starting; ending; views; uri; channels; categories})
 
   let count_channel_view channel channel_views =
     match channel with
