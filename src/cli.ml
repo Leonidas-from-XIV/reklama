@@ -10,11 +10,17 @@ let do_single_request db =
     in
     let interests = loop [] in
     let current_time = Ptime_clock.now () in
-    begin match Reklama.find_matching_ad db (Some ch) interests current_time with
-    | Some ad_id -> Format.printf "Found %a\n" Reklama.Ad.print ad_id
-    | None -> print_endline "No matches found"
-    end;
-    Some db
+    match Reklama.find_matching_ad db (Some ch) interests current_time with
+    | None ->
+        print_endline "No matches found";
+        Some db
+    | Some ad ->
+        Format.printf "Found %a\n" Reklama.Ad.print ad;
+        let (uri, db) = Reklama.Ad.view (Some ch) ad db in
+        (match uri with
+        | None -> ()
+        | Some uri -> Format.printf "URI is %a\n" Uri.pp_hum uri);
+        Some db
 
 let main () =
   let db = Reklama.load_initial_db "ads.sexp" in
