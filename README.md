@@ -6,13 +6,31 @@ Reklama is a proof of concept for serving ads.
 
 ## Building ##
 
-You need a system with [OPAM](https://opam.ocaml.org/) and a recent-ish OCaml
-compiler, so something 4.02 or newer.
+As a native program, the build story can be a bit tough since you need to
+install dependencies.
 
-```bash
+### Locally ###
+
+You need a system with [OPAM](https://opam.ocaml.org/) and a recent-ish OCaml
+compiler, so something 4.02 or newer. It was developed on OCaml 4.04.
+
+```sh
 opam install ocamlbuild topkg ptime containers uri lwt webmachine
 ocaml pkg/pkg.ml build
 ```
+
+### Docker ###
+
+Alternatively it is also possible to build and run the application via Docker.
+There is a [base-image][] which supplies the system. This repository contains a
+`Dockerfile` which builds `reklama` and starts the web application.
+
+```sh
+docker build -t reklama:latest .
+docker run -d -p 8080:8080 reklama:latest
+```
+
+Now you can access the REST API on port 8080.
 
 ## Usage ##
 
@@ -72,3 +90,4 @@ See `LICENSE.md`. Spoiler alert: Apache-2.0.
 
 [curl]: https://curl.haxx.se/
 [httpie]: https://httpie.org/
+[base-image]: https://hub.docker.com/r/leonidasfromxiv/docker-opam/
