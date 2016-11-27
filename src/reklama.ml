@@ -52,6 +52,7 @@ module Ad : sig
   val of_sexp : CCSexp.t -> t option
   val db_of_ad_list : t list -> t DataBase.t
   val view : string option -> t -> t DataBase.t -> Uri.t option * t DataBase.t
+  val build : int -> Ptime.t -> Ptime.t -> int -> Uri.t -> channel_views list -> interest list -> t
 end = struct
   type t = {
     id: int;
@@ -63,6 +64,9 @@ end = struct
     categories: interest list;
   }
   module DataBase = Map.Make(Int)
+
+  let build id starting ending views uri channels categories =
+    {id; starting; ending; views; uri; channels; categories}
 
   let print out v =
     Format.fprintf out

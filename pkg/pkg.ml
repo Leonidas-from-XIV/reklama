@@ -9,4 +9,4 @@ let () =
     "reklama" @@ fun c ->
   Ok [ Pkg.bin "src/cli";
        Pkg.bin "src/web";
-       Pkg.test "src/test" ]
+       Pkg.test "src/testsuite" ]
