@@ -14,7 +14,12 @@ depends: [
   "lwt"
   "cohttp"
   "webmachine"
-  "qtest" ]
+  "qtest" {test} ]
 build: [
   "ocaml" "pkg/pkg.ml" "build"
           "--pinned" "%{pinned}%" ]
+build-test: [
+  [ "ocaml" "pkg/pkg.ml" "build"
+            "--pinned" "%{pinned}%"
+            "--tests" "true" ]
+  [ "ocaml" "pkg/pkg.ml" "test" ]]
