@@ -43,6 +43,8 @@ end
 class ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
 
+  val matching_ad = Ref.create None
+
   method private to_json rd =
     Wm.continue `Empty rd
 
@@ -61,11 +63,15 @@ class ad db = object(self)
     let current_time = Ptime_clock.now () in
     Db.retrieve db current_time (self#id rd) >>= function
       | None -> Wm.continue false rd
-      | Some _ -> Wm.continue true rd
+      | retrieved ->
+          matching_ad
+          |> Ref.update (function
+            | None -> retrieved
+            | previous -> previous);
+          Wm.continue true rd
 
   method moved_temporarily rd =
-    let current_time = Ptime_clock.now () in
-    Db.retrieve db current_time (self#id rd) >>= function
+    match !matching_ad with
       | None -> Wm.continue None rd
       | Some ad ->
           Db.view db None ad >>= fun uri ->
@@ -77,6 +83,8 @@ end
 
 class match_ad db = object(self)
   inherit [Cohttp_lwt_body.t] Wm.resource
+
+  val retrieved = Ref.create None
 
   method private to_json rd =
     Wm.continue `Empty rd
@@ -91,18 +99,18 @@ class match_ad db = object(self)
       | None -> [] in
     let current_time = Ptime_clock.now () in
     Db.match_ db channel interests current_time >>= function
-      | Some _ -> Wm.continue true rd
       | None -> Wm.continue false rd
+      | Some ad ->
+          retrieved
+          |> Ref.update (function
+            | None -> Some (ad, channel)
+            | previous -> previous);
+          Wm.continue true rd
 
   method moved_temporarily rd =
-    let channel = Uri.get_query_param rd.Wm.Rd.uri "channel" in
-    let interests = match Uri.get_query_param' rd.Wm.Rd.uri "interests" with
-      | Some ints -> ints
-      | None -> [] in
-    let current_time = Ptime_clock.now () in
-    Db.match_ db channel interests current_time >>= function
+    match !retrieved with
       | None -> Wm.continue None rd
-      | Some ad ->
+      | Some (ad, channel)  ->
           Db.view db channel ad >>= fun uri ->
             Wm.continue uri rd
 
