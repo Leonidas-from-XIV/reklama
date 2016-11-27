@@ -48,6 +48,7 @@ module Ad : sig
   val categories : string option -> t -> Categories.t
   val within_time : timestamp -> t -> bool
   val views_left : t -> bool
+  val views_for_channel_left : string option -> t -> bool
   module DataBase : Map.S with type key = int
   val of_sexp : CCSexp.t -> t option
   val db_of_ad_list : t list -> t DataBase.t
@@ -93,6 +94,20 @@ end = struct
 
   let views_left ad =
     ad.views > 0
+
+
+  let views_for_channel_left channel ad =
+    match channel with
+    | None -> true
+    | Some channel_name ->
+        let rec loop = function
+          | [] -> None
+          | (k, v)::cs -> if k.name = channel_name then
+            Some v else loop cs
+        in
+        match loop ad.channels with
+        | None -> false
+        | Some views -> views > 0
 
   let of_sexp e =
     CCSexp.Traverse.(
@@ -161,6 +176,10 @@ let filter_for_views db =
   db
   |> List.filter Ad.views_left
 
+let filter_for_channel_views channel db =
+  db
+  |> List.filter @@ Ad.views_for_channel_left channel
+
 let find_matching_ad db channel interests current_time =
   let db =
     db
@@ -169,6 +188,7 @@ let find_matching_ad db channel interests current_time =
     |> filter_for_interests channel interests
     |> filter_for_time current_time
     |> filter_for_views
+    |> filter_for_channel_views channel
   in
   match db with
   | [] -> None
