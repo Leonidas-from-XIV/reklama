@@ -13,7 +13,8 @@ depends: [
   "uri"
   "lwt"
   "cohttp"
-  "webmachine" ]
+  "webmachine"
+  "qtest" ]
 build: [
   "ocaml" "pkg/pkg.ml" "build"
           "--pinned" "%{pinned}%" ]

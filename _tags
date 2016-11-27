@@ -1,3 +1,4 @@
-true: package(containers), package(containers.sexp), package(ptime), package(uri), safe_string
+true: package(containers), package(containers.sexp), package(ptime), package(uri), package(lwt), safe_string, warn(-58)
 <**/web.ml> or <**/web.native>: package(cohttp.lwt), package(webmachine), package(ptime.clock.os)
 <**/cli.ml> or <**/cli.native>: package(ptime.clock.os)
+<**/test.ml> or <**/test.native>: package(qcheck)

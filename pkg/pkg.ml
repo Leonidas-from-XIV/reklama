@@ -8,4 +8,5 @@ let () =
     ~change_logs:[]
     "reklama" @@ fun c ->
   Ok [ Pkg.bin "src/cli";
-       Pkg.bin "src/web" ]
+       Pkg.bin "src/web";
+       Pkg.test "src/test" ]
