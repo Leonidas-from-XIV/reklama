@@ -16,11 +16,13 @@ let channel_of_sexp e =
       map_opt to_string cats >>= fun categories ->
       return {name; categories})
 
+let print_categories = Format.(list ~start:"[" ~stop:"]" string)
+
 let print_channel out v =
   Format.fprintf out
-    "{name = \"%s\"; categories = %a}"
+    "{name = \"%s\"; categories = @[<hov>%a@]}"
     v.name
-    Format.(list ~start:"[" ~stop:"]" string) v.categories;;
+    print_categories v.categories;;
 
 type channel_views = (channel * int)
 
@@ -71,13 +73,14 @@ end = struct
 
   let print out v =
     Format.fprintf out
-      "{id = %d; starting = %a; ending = %a; views = %d; uri = \"%a\"; channels = %a}"
+      "{id = %d; starting = %a; ending = %a; views = %d; uri = \"%a\"; channels = @[<hov>%a@]; categories = @[<hov>%a@]}"
       v.id
       (Ptime.pp_human ()) v.starting
       (Ptime.pp_human ()) v.ending
       v.views
       Uri.pp_hum v.uri
       Format.(list print_channel_views) v.channels
+      print_categories v.categories
 
   let categories channel ad =
     (match channel with
