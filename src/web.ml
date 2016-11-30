@@ -8,7 +8,21 @@ open Cohttp_lwt_unix
 open Lwt.Infix
 
 (* This is where the Reklama.Ad.DataBase will be stored and modified *)
-module Db = struct
+module Db : sig
+  (* Restrict the module to only these public functions *)
+  (* Open Reklama, so we don't have to prefix every type with Reklama. *)
+  open Reklama
+  (* This type is abstract, no need to leak the implementation *)
+  type 'a t
+  (* Some public functions *)
+  val create : Ad.t Ad.DataBase.t -> Ad.t Ad.DataBase.t t
+  val match' : Ad.t Ad.DataBase.t t -> string option -> interest list -> Ptime.t -> Ad.t option Lwt.t
+  val retrieve : Ad.t Ad.DataBase.t t -> Ptime.t -> Ad.DataBase.key -> Ad.t option Lwt.t
+  val view : Ad.t Ad.DataBase.t t -> string option -> Ad.t -> Uri.t option Lwt.t
+end = struct
+  (* The implementation of Db.t is an Lwt_mvar, but this is not exposed
+     to the outside *)
+  type 'a t = 'a Lwt_mvar.t
   (* Creates an instance of the state. The state is an Lwt_mvar, which
      is like an atom that can only be dereferenced once at a time, all other
      processes which attempt to do so will block *)
