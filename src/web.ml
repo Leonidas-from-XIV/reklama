@@ -167,11 +167,16 @@ class ad db = object(self)
 
   (* Helper function to retrieve :id from the request URL *)
   method private id rd =
-    (* Convert the string to int *)
+    (* Retrieve the :id url parameter *)
     match Wm.Rd.lookup_path_info "id" rd with
+    (* No :id was supplied. Unlikely since the route matched. *)
     | None -> None
+    (* Convert the string to int *)
     | Some id -> match int_of_string id with
+      (* Yep, all fine *)
       | integer -> Some integer
+      (* We can also match on exceptions and failing to parse a string to int
+         raises one *)
       | exception Failure _ -> None
 end
 
