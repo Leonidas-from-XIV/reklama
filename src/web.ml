@@ -136,16 +136,19 @@ class ad db = object(self)
   method previously_existed rd =
     let current_time = Ptime_clock.now () in
     (* Retrieve ad by the :id param from the route *)
-    Db.retrieve db current_time (self#id rd) >>= function
-      | None -> Wm.continue false rd
-      | retrieved ->
-          (* found an ad, save it for later *)
-          (* this is like swap! in Clojure *)
-          matching_ad
-          |> Ref.update (function
-            | None -> retrieved
-            | previous -> previous);
-          Wm.continue true rd
+    match self#id rd with
+    | None -> Wm.continue false rd
+    | Some id ->
+      Db.retrieve db current_time id >>= function
+        | None -> Wm.continue false rd
+        | retrieved ->
+            (* found an ad, save it for later *)
+            (* this is like swap! in Clojure *)
+            matching_ad
+            |> Ref.update (function
+              | None -> retrieved
+              | previous -> previous);
+            Wm.continue true rd
 
   (* Check whether to return 307 Moved Temporarily. This is the proper
      return code since we don't want potential caches to cache this
@@ -165,7 +168,11 @@ class ad db = object(self)
   (* Helper function to retrieve :id from the request URL *)
   method private id rd =
     (* Convert the string to int *)
-    int_of_string @@ Wm.Rd.lookup_path_info_exn "id" rd
+    match Wm.Rd.lookup_path_info "id" rd with
+    | None -> None
+    | Some id -> match int_of_string id with
+      | integer -> Some integer
+      | exception Failure _ -> None
 end
 
 (* Handle matching ad by interests & channel *)
