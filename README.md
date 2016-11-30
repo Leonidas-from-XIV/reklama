@@ -37,6 +37,25 @@ Now you can access the REST API on port 8080.
 
 Specify your database in the `ads.sexp` file.
 
+The `ads.sexp` file contains a list of ads to be served. Each ad consists of an
+(integer) id (field `id`), a RFC 3339 compatible string containing a starting
+time which signifies the starting time of an id to be served (field
+`starting`). Simiarly it also contains a field `ending` which also includes a
+RFC 3339 compatible string to determine which time is the latest time to be
+queried. Next, there is a field `views` which takes an integer to determine
+what the maximal amount of views it is. This includes views via a channel
+matching als well as views via the ID directly. Then there is an `uri` which
+determines what URL the REST service will redirect to in case the ad matches
+the request. Then there are `categories` inherent to the ad itself, which will
+cause a match if a user requests it with these interests. Finally, an ad has a
+list of channels and views (that is how often an ad can be delivered for a
+channel).
+
+A channel consists of a string `name` and some `categories` (another string
+list) inherent to the channel, which is coupled with the maximum amount of
+views that are allowed for said channel. If the number reaches 0, the ad will
+not be served to users requesting from this channel.
+
 There is a command line interface (`_build/src/cli.native`) to request items,
 as well as a REST based interface (`_build/src/web`) which will load the DB
 upon startup and allow requesting over port 8080.
