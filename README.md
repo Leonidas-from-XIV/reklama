@@ -1,6 +1,6 @@
 # Reklama #
 
-[![Build Status](https://travis-ci.com/Leonidas-from-XIV/reklama.svg?token=ikxzhRzSB2xgcAYcBv1R&branch=master)](https://travis-ci.com/Leonidas-from-XIV/reklama)
+[![Build Status](https://travis-ci.org/Leonidas-from-XIV/reklama.svg?branch=master)](https://travis-ci.org/Leonidas-from-XIV/reklama)
 
 Reklama is a proof of concept for serving ads.
 
