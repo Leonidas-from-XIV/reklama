@@ -53,6 +53,16 @@ let proper_amount_of_channel_views = QCheck.(Test.make ~count:1000 ad @@
     let uris = loop db [] in
     List.length uris = channel_views)
 
+let list_all pred xs =
+  xs
+  |> List.find_pred (fun x -> not @@ pred x)
+  |> CCOpt.is_none
+
+let list_any pred xs =
+  xs
+  |> List.find_pred pred
+  |> CCOpt.is_some
+
 let all_matches_proper_interest = QCheck.(Test.make ~count:1000 db_with_interests @@
   fun db ->
     let channel_name = Some Reklama.(channel.name) in
@@ -67,15 +77,12 @@ let all_matches_proper_interest = QCheck.(Test.make ~count:1000 db_with_interest
             | (_, db) -> loop db ((Reklama.Ad.categories channel_name ad)::categories) (n-1)
     in
     let categories = loop db [] 100 in
-    let has_no_travel_category categories =
+    let has_travel_category categories =
       categories
       |> Reklama.Categories.to_list
-      |> List.find_pred (fun x -> x = "travel")
-      |> CCOpt.is_none
+      |> list_any (fun x -> x = "travel")
     in
-    match categories |> List.find_pred has_no_travel_category with
-    | None -> true
-    | Some _ -> false)
+    list_all has_travel_category categories)
 
 let main () =
   QCheck_runner.run_tests_main [
