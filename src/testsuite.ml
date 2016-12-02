@@ -72,20 +72,6 @@ let proper_amount_of_channel_views = QCheck.(Test.make ~count:1000 ad @@
     (* Check whether we got exactly as many views for a channel as we were supposed to get *)
     List.length uris = channel_views)
 
-(* Some helper functions *)
-(* Check whether a predicate matches all entries of a list *)
-let list_all pred xs =
-  xs
-  (* Check whether there is one which does *not* match the negated predicate *)
-  |> List.find_pred (fun x -> not @@ pred x)
-  |> CCOpt.is_none
-
-(* Check whether there is any item which matches the predicate *)
-let list_any pred xs =
-  xs
-  |> List.find_pred pred
-  |> CCOpt.is_some
-
 (* Make sure all the matches that we got have the proper category match *)
 let all_matches_proper_interest = QCheck.(Test.make ~count:1000 db_with_interests @@
   fun db ->
@@ -107,10 +93,10 @@ let all_matches_proper_interest = QCheck.(Test.make ~count:1000 db_with_interest
     let has_travel_category categories =
       categories
       |> Reklama.Categories.to_list
-      |> list_any (fun x -> x = "travel")
+      |> List.exists (fun x -> x = "travel")
     in
     (* Make sure all hits have at least a travel category, as requested *)
-    list_all has_travel_category categories)
+    List.for_all has_travel_category categories)
 
 let main () =
   (* All the checks that we have and which should be run *)
