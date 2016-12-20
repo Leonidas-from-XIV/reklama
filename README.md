@@ -15,7 +15,7 @@ You need a system with [OPAM](https://opam.ocaml.org/) and a recent-ish OCaml
 compiler, so something 4.02 or newer. It was developed on OCaml 4.04.
 
 ```sh
-opam install ocamlbuild topkg ptime containers uri lwt webmachine qtest
+opam install ocamlbuild topkg ptime containers uri lwt webmachine qcheck
 ocaml pkg/pkg.ml build
 ocaml pkg/pkg.ml test
 ```
